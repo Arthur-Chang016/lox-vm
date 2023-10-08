@@ -1,8 +1,12 @@
-use std::mem;
+
+use debug::disassemble_chunk;
 
 use crate::chunk::OpCode;
+// use crate::debug;
 
-pub mod chunk;
+mod chunk;
+
+mod debug;
 
 fn main() {
     let mut chunk: Vec<OpCode> = Vec::new();
@@ -15,5 +19,8 @@ fn main() {
     
     // println!("{chunk. }");
     
-    println!("Hello, world!");
+    
+    disassemble_chunk(&chunk, "test chunk");
+    
+    // println!("Hello, world!");
 }
