@@ -1,26 +1,22 @@
 
+use chunk::Chunk;
 use debug::disassemble_chunk;
 
 use crate::chunk::OpCode;
 // use crate::debug;
 
 mod chunk;
-
 mod debug;
 
 fn main() {
-    let mut chunk: Vec<OpCode> = Vec::new();
+    let mut chunk = Chunk::new();
     
-    // let tmp = mem::size_of::<OpCode>();
+    let constant = chunk.add_constant(1.2);
+    chunk.write_chunk(OpCode::OpConstant as u8, 123);
+    chunk.write_chunk(constant as u8, 123);
     
-    // println!("{tmp}");
-    
-    chunk.push(OpCode::OpReturn);
-    
-    // println!("{chunk. }");
+    chunk.write_chunk(OpCode::OpReturn as u8, 123);
     
     
     disassemble_chunk(&chunk, "test chunk");
-    
-    // println!("Hello, world!");
 }
