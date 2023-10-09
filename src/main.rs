@@ -1,14 +1,21 @@
 
 use chunk::Chunk;
 use debug::disassemble_chunk;
+use vm::VM;
 
 use crate::chunk::OpCode;
 // use crate::debug;
 
 mod chunk;
 mod debug;
+mod vm;
+
 
 fn main() {
+    let vm = VM::new();
+    vm.init_vm();
+    
+    
     let mut chunk = Chunk::new();
     
     let constant = chunk.add_constant(1.2);
@@ -19,4 +26,6 @@ fn main() {
     
     
     disassemble_chunk(&chunk, "test chunk");
+    
+    vm.free_vm();
 }
