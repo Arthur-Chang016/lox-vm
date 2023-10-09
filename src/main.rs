@@ -23,9 +23,7 @@ fn main() {
     let constant = vm.chunk.add_constant(1.2);
     vm.chunk.write_chunk(OpCode::OpConstant as u8, 123);
     vm.chunk.write_chunk(constant as u8, 123);
-    
     vm.chunk.write_chunk(OpCode::OpReturn as u8, 123);
-    
     
     vm.chunk.disassemble_chunk("test chunk");
     
