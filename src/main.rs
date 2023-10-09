@@ -1,6 +1,6 @@
 
+
 use chunk::Chunk;
-use debug::disassemble_chunk;
 use vm::VM;
 
 use crate::chunk::OpCode;
@@ -12,20 +12,22 @@ mod vm;
 
 
 fn main() {
-    let vm = VM::new();
+    
+    
+    let chunk = Chunk::new();
+    // let chunk_ref = chunk.borrow_mut();
+    
+    let mut vm = VM::new(chunk);
     vm.init_vm();
     
+    let constant = vm.chunk.add_constant(1.2);
+    vm.chunk.write_chunk(OpCode::OpConstant as u8, 123);
+    vm.chunk.write_chunk(constant as u8, 123);
     
-    let mut chunk = Chunk::new();
-    
-    let constant = chunk.add_constant(1.2);
-    chunk.write_chunk(OpCode::OpConstant as u8, 123);
-    chunk.write_chunk(constant as u8, 123);
-    
-    chunk.write_chunk(OpCode::OpReturn as u8, 123);
+    vm.chunk.write_chunk(OpCode::OpReturn as u8, 123);
     
     
-    disassemble_chunk(&chunk, "test chunk");
+    vm.chunk.disassemble_chunk("test chunk");
     
     vm.free_vm();
 }

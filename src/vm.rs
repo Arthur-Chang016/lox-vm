@@ -1,14 +1,15 @@
+
 use crate::chunk::Chunk;
 
 pub struct VM {
-    chunk: Chunk,
+    pub chunk: Box<Chunk>,
 }
 
 impl VM {
     
-    pub fn new() -> VM {
+    pub fn new(c: Chunk) -> VM {
         return VM {
-            chunk: Chunk::new(),
+            chunk: Box::new(c),
         }
     }
     
@@ -21,3 +22,7 @@ impl VM {
     }
     
 }
+
+// pub fn interpret(chunk: &Chunk) -> InterpreResult {
+//     None
+// }

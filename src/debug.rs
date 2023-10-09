@@ -1,13 +1,39 @@
 use crate::chunk::{OpCode, Chunk};
 
-pub fn disassemble_chunk(chunk: &Chunk, name: &str) {
-    println!("== {name} ==");
+impl Chunk {
     
-    let mut offset = 0;
-    while offset < chunk.code.len() {
-        offset = disassemble_instruction(chunk, offset);
+    pub fn disassemble_chunk(&self, name: &str) {
+        println!("== {name} ==");
+        
+        let mut offset = 0;
+        while offset < self.code.len() {
+            offset = disassemble_instruction(self, offset);
+        }
+    }
+    
+    pub fn disassemble_instruction(&self, offset: usize) ->usize {
+        print!("{:04} ", offset);
+        
+        if offset > 0 && self.lines[offset] == self.lines[offset - 1] {
+            print!("   | ");
+        } else {
+            print!("{:4} ", self.lines[offset]);
+        }
+        
+        let instruction = self.code[offset];
+        match instruction {
+            x if x == OpCode::OpConstant as u8 => return constant_instruction("OP_CONSTANT", &self, offset),
+            x if x == OpCode::OpReturn as u8 => return simple_instruction("OP_RETURN", offset),
+            
+            _ => {
+                println!("Unknown opcode {}", instruction as u8);
+                return offset + 1;
+            }
+        }
     }
 }
+
+
 
 pub fn disassemble_instruction(chunk: &Chunk, offset: usize) ->usize {
     print!("{:04} ", offset);
