@@ -37,6 +37,17 @@ impl VM {
         
     }
     
+    pub fn debug(&self) {
+        print!("          ");
+        for i in 0 .. self.stack_top {
+            print!("[ ");
+            print_value(self.stack[i]);
+            print!(" ]");
+        }
+        println!();
+        self.chunk.disassemble_instruction(self.ip);
+    }
+    
     pub fn push(&mut self, value: f64) {
         self.stack[self.stack_top] = value;
         self.stack_top += 1;
@@ -45,6 +56,12 @@ impl VM {
     pub fn pop(&mut self) -> f64 {
         self.stack_top -= 1;
         return self.stack[self.stack_top];
+    }
+    
+    pub fn binary_op<F>(&mut self, op: F) where F: Fn(f64, f64) -> f64 {
+        let b = self.pop();
+        let a = self.pop();
+        self.push(op(a, b));
     }
     
     pub fn interpret(&mut self) -> InterpreResult {
@@ -64,17 +81,46 @@ impl VM {
     
     pub fn run(&mut self) -> InterpreResult {
         loop {
-            // debug
-            // self.chunk.disassemble_instruction(self.ip);
+            // TODO config debug mode macro
+            // self.debug();
             
             let instruction = self.read_byte();
             match instruction {
+                
                 x if x == OpCode::OpConstant as u8 => {
                     let constant = self.read_constant();
-                    print_value(constant);
+                    // print_value(constant);
+                    self.push(constant);
                     println!();
                 }
-                x if x == OpCode::OpReturn as u8 => return InterpreResult::InterpretOk,
+                
+                x if x == OpCode::OpAdd as u8 => {
+                    self.binary_op(|a, b| a + b);
+                }
+                
+                x if x == OpCode::OpSubtract as u8 => {
+                    self.binary_op(|a, b| a - b);
+                }
+                
+                x if x == OpCode::OpMultiply as u8 => {
+                    self.binary_op(|a, b| a * b);
+                }
+                
+                x if x == OpCode::OpDivide as u8 => {
+                    self.binary_op(|a, b| a / b);
+                }
+                
+                
+                x if x == OpCode::OpNegate as u8 => {
+                    let neg = -self.pop();
+                    self.push(neg);
+                }
+                
+                x if x == OpCode::OpReturn as u8 => {
+                    print_value(self.pop());
+                    println!();
+                    return InterpreResult::InterpretOk;
+                } 
                 
                 _ => {},
             }

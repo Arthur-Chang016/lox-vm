@@ -3,6 +3,11 @@
 #[repr(u8)]
 pub enum OpCode {
     OpConstant,
+    OpAdd,
+    OpSubtract,
+    OpMultiply,
+    OpDivide,
+    OpNegate,
     OpReturn,
 }
 
@@ -26,6 +31,11 @@ impl Chunk {
         self.code.push(byte);
         self.lines.push(line);
     }
+    
+    // pub fn write_chunk(&mut self, byte: OpCode, line: i32) {
+    //     self.code.push(byte);
+    //     self.lines.push(line);
+    // }
     
     pub fn add_constant(&mut self, value: f64) -> usize {
         self.constants.push(value);
