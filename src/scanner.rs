@@ -63,8 +63,9 @@ impl Scanner<'_> {
     }
     
     pub fn peek(&self) -> char {
-        // println!("{} {}", self.source, self.current);
-        
+        if self.current == self.source.as_bytes().len() {  // simulate C for null termination
+            return '\0';
+        }
         return self.source.as_bytes()[self.current] as char;
     }
     
@@ -151,7 +152,7 @@ impl Scanner<'_> {
             'f' => if self.current - self.start > 1 {
                 match self.source.as_bytes()[self.start + 1] as char {
                     'a' => return self.check_keyword(2, 3, "lse", TokenType::TokenFalse),
-                    'o' => return self.check_keyword(2, 1, "r", TokenType::TokenOr),
+                    'o' => return self.check_keyword(2, 1, "r", TokenType::TokenFor),
                     'u' => return self.check_keyword(2, 1, "n", TokenType::TokenFun),
                     _ => {},
                 }
