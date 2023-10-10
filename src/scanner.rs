@@ -98,12 +98,74 @@ impl Scanner<'_> {
                         self.advance();
                     }
                 } else {
-                    return;
+                    return
                 }
             } else {
                 return
             }
         }
+    }
+    
+    pub fn string(&mut self) -> Token {
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+            self.advance();
+        }
+        if self.is_at_end() {
+            return Token::error_token("Unterminated string.", self.line);
+        }
+        // The closing quote
+        self.advance();
+        return Token::make_token(TokenType::TokenString, self.line, self.make_content());
+    }
+    
+    pub fn number(&mut self) -> Token {
+        while is_digit(self.peek()) { self.advance(); }
+        // look for fractional part
+        if self.peek() == '.' && is_digit(self.peek_next()) {
+            self.advance();  // consume "."
+            while is_digit(self.peek()) { self.advance(); }
+        }
+        return Token::make_token(TokenType::TokenNumber, self.line, self.make_content());
+    }
+    
+    pub fn check_keyword(&self, start: usize, length: usize, rest: &str, type_: TokenType) -> TokenType {
+        if self.current - self.start == start + length {
+            let comp_str = &self.source[self.start + start .. self.start + start + length];
+            if rest == comp_str {
+                return type_;
+            }
+        }
+        return TokenType::TokenIdentifier;
+    }
+    
+    pub fn identifier_type(&self) -> TokenType {
+        match self.source.as_bytes()[self.start] as char {
+            'a' => return self.check_keyword(1, 2, "nd", TokenType::TokenAnd),
+            'c' => return self.check_keyword(1, 4, "lass", TokenType::TokenClass),
+            'e' => return self.check_keyword(1, 3, "lse", TokenType::TokenElse),
+            'i' => return self.check_keyword(1, 1, "f", TokenType::TokenIf),
+            'n' => return self.check_keyword(1, 2, "il", TokenType::TokenNil),
+            'o' => return self.check_keyword(1, 1, "r", TokenType::TokenOr),
+            'p' => return self.check_keyword(1, 4, "rint", TokenType::TokenPrint),
+            'r' => return self.check_keyword(1, 5, "eturn", TokenType::TokenReturn),
+            's' => return self.check_keyword(1, 4, "uper", TokenType::TokenSuper),
+            'v' => return self.check_keyword(1, 2, "ar", TokenType::TokenVar),
+            'w' => return self.check_keyword(1, 4, "hile", TokenType::TokenWhile),
+            
+            _ => {},
+        }
+        
+        return TokenType::TokenIdentifier;
+    }
+    
+    pub fn identifier(&mut self) -> Token {
+        while is_alpha(self.peek()) || is_digit(self.peek()) {
+            self.advance();
+        }
+        return Token::make_token(self.identifier_type(), self.line, self.make_content());
     }
     
     pub fn scan_token(&mut self) -> Token {
@@ -114,6 +176,8 @@ impl Scanner<'_> {
         }
         
         let c = self.advance();
+        if is_alpha(c) { return self.identifier(); }
+        if is_digit(c) { return self.number(); }
             
         match c {
             '(' => return Token::make_token(TokenType::TokenLeftParen, self.line, self.make_content()),
@@ -132,6 +196,8 @@ impl Scanner<'_> {
             '=' => return Token::make_token(if self.match_('=') { TokenType::TokenEqualEqual } else { TokenType::TokenEqual }, self.line, self.make_content()),
             '<' => return Token::make_token(if self.match_('=') { TokenType::TokenLessEqual } else { TokenType::TokenLess }, self.line, self.make_content()),
             '>' => return Token::make_token(if self.match_('=') { TokenType::TokenGreaterEqual } else { TokenType::TokenGreater }, self.line, self.make_content()),
+            
+            '"' => return self.string(),
             
             _ => {}
         }
@@ -160,3 +226,10 @@ impl Token<'_> {
     
 }
 
+pub fn is_digit(c: char) -> bool {
+    return '0' <= c && c <= '9';
+}
+
+pub fn is_alpha(c: char) -> bool {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
