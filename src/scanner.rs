@@ -63,6 +63,8 @@ impl Scanner<'_> {
     }
     
     pub fn peek(&self) -> char {
+        // println!("{} {}", self.source, self.current);
+        
         return self.source.as_bytes()[self.current] as char;
     }
     
@@ -146,15 +148,29 @@ impl Scanner<'_> {
             'a' => return self.check_keyword(1, 2, "nd", TokenType::TokenAnd),
             'c' => return self.check_keyword(1, 4, "lass", TokenType::TokenClass),
             'e' => return self.check_keyword(1, 3, "lse", TokenType::TokenElse),
+            'f' => if self.current - self.start > 1 {
+                match self.source.as_bytes()[self.start + 1] as char {
+                    'a' => return self.check_keyword(2, 3, "lse", TokenType::TokenFalse),
+                    'o' => return self.check_keyword(2, 1, "r", TokenType::TokenOr),
+                    'u' => return self.check_keyword(2, 1, "n", TokenType::TokenFun),
+                    _ => {},
+                }
+            }
             'i' => return self.check_keyword(1, 1, "f", TokenType::TokenIf),
             'n' => return self.check_keyword(1, 2, "il", TokenType::TokenNil),
             'o' => return self.check_keyword(1, 1, "r", TokenType::TokenOr),
             'p' => return self.check_keyword(1, 4, "rint", TokenType::TokenPrint),
             'r' => return self.check_keyword(1, 5, "eturn", TokenType::TokenReturn),
             's' => return self.check_keyword(1, 4, "uper", TokenType::TokenSuper),
+            't' => if self.current - self.start > 1 {
+                match self.source.as_bytes()[self.start + 1] as char {
+                    'h' => return self.check_keyword(2, 2, "is", TokenType::TokenThis),
+                    'r' => return self.check_keyword(2, 2, "ue", TokenType::TokenTrue),
+                    _ => {},
+                }
+            }
             'v' => return self.check_keyword(1, 2, "ar", TokenType::TokenVar),
             'w' => return self.check_keyword(1, 4, "hile", TokenType::TokenWhile),
-            
             _ => {},
         }
         
