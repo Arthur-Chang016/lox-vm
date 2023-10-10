@@ -11,6 +11,7 @@ mod chunk;
 mod debug;
 mod vm;
 mod compiler;
+mod scanner;
 
 fn test() {
     let mut vm = VM::new(Chunk::new());
