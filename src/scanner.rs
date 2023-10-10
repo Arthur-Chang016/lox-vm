@@ -56,11 +56,58 @@ impl Scanner<'_> {
         return &self.source[self.start .. self.current];
     }
     
-    pub fn advance(&self) -> char {
-        '1'
+    pub fn advance(&mut self) -> char {
+        let ret = self.source.as_bytes()[self.current] as char;
+        self.current += 1;
+        return ret;
+    }
+    
+    pub fn peek(&self) -> char {
+        return self.source.as_bytes()[self.current] as char;
+    }
+    
+    pub fn match_(&mut self, expected: char) -> bool {
+        if self.is_at_end() {
+            return false;
+        } else if self.source.as_bytes()[self.current] as char != expected {
+            return false;
+        }
+        self.current += 1;
+        return true;
+    }
+    
+    pub fn peek_next(&mut self) -> char {
+        return if self.is_at_end() {
+            '\0'
+        } else {
+            self.source.as_bytes()[self.current + 1] as char
+        }
+    }
+    
+    pub fn skip_whitespace(&mut self) {
+        loop {
+            let c = self.peek();
+            if c == ' ' || c == '\r' || c == '\t' {
+                self.advance();
+            } else if c == '\n' {
+                self.line += 1;
+                self.advance();
+            } else if c == '/' {
+                if self.peek_next() == '/' {  // comment
+                    while self.peek() != '\n' && !self.is_at_end() {  // peek until next line
+                        self.advance();
+                    }
+                } else {
+                    return;
+                }
+            } else {
+                return
+            }
+        }
     }
     
     pub fn scan_token(&mut self) -> Token {
+        self.skip_whitespace();
         self.start = self.current;
         if self.is_at_end() {
             return Token::make_token(TokenType::TokenEof, self.line, self.make_content());
@@ -80,6 +127,12 @@ impl Scanner<'_> {
             '+' => return Token::make_token(TokenType::TokenPlus, self.line, self.make_content()),
             '/' => return Token::make_token(TokenType::TokenSlash, self.line, self.make_content()),
             '*' => return Token::make_token(TokenType::TokenStar, self.line, self.make_content()),
+            
+            '!' => return Token::make_token(if self.match_('=') { TokenType::TokenBangEqual } else { TokenType::TokenBang }, self.line, self.make_content()),
+            '=' => return Token::make_token(if self.match_('=') { TokenType::TokenEqualEqual } else { TokenType::TokenEqual }, self.line, self.make_content()),
+            '<' => return Token::make_token(if self.match_('=') { TokenType::TokenLessEqual } else { TokenType::TokenLess }, self.line, self.make_content()),
+            '>' => return Token::make_token(if self.match_('=') { TokenType::TokenGreaterEqual } else { TokenType::TokenGreater }, self.line, self.make_content()),
+            
             _ => {}
         }
         
