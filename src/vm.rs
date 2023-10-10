@@ -2,7 +2,9 @@
 use crate::chunk::{Chunk, OpCode};
 
 use crate::debug::print_value;
+use crate::compiler::compile;
 
+#[derive(PartialEq)]
 pub enum InterpreResult {
     InterpretOk,
     InterpretCompileError,
@@ -64,10 +66,6 @@ impl VM {
         self.push(op(a, b));
     }
     
-    pub fn interpret(&mut self) -> InterpreResult {
-        return self.run();
-    }
-    
     fn read_byte(&mut self) -> u8 {
         let ret = self.chunk.code[self.ip];
         self.ip += 1;
@@ -127,6 +125,9 @@ impl VM {
         }
         
     }
-    
 }
 
+pub fn interpret(source: &str) -> InterpreResult {
+    compile(source);
+    return InterpreResult::InterpretOk;
+}
