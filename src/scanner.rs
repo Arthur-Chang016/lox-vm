@@ -22,7 +22,6 @@ pub enum TokenType {
     TokenError, TokenEmpty, TokenEof
 }
 
-// #[derive(Copy, Clone)]
 pub struct Scanner<'a> {
     pub start: usize,
     pub current: usize,
