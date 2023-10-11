@@ -19,9 +19,10 @@ pub enum TokenType {
     TokenPrint, TokenReturn, TokenSuper, TokenThis,
     TokenTrue, TokenVar, TokenWhile,
     // Others
-    TokenError, TokenEof
+    TokenError, TokenEmpty, TokenEof
 }
 
+// #[derive(Copy, Clone)]
 pub struct Scanner<'a> {
     pub start: usize,
     pub current: usize,
@@ -29,7 +30,7 @@ pub struct Scanner<'a> {
     pub source: &'a str,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 pub struct Token<'a> {
     pub type_: TokenType,
     // pub start: usize,
@@ -240,7 +241,9 @@ impl Token<'_> {
         }
     }
     
-    
+    pub fn empty_token() -> Token<'static> {
+        return Self::make_token(TokenType::TokenEmpty, 0, "");
+    }
 }
 
 pub fn is_digit(c: char) -> bool {
