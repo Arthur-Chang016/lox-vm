@@ -114,7 +114,7 @@ impl VM {
                 }
                 
                 x if x == OpCode::OpReturn as u8 => {
-                    print_value(self.pop());
+                    print_value(self.pop());  // TODO if the stack is empty, this would be a problem
                     println!();
                     return InterpreResult::InterpretOk;
                 } 

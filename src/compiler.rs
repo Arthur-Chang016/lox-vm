@@ -43,6 +43,11 @@ impl Parser<'_> {
         }
     }
     
+    pub fn number(&mut self, chunk: &mut Chunk) {
+        let value = self.previous.content.parse::<f64>().expect("Not a number");
+        chunk.emit_constant(value, self);
+    }
+    
 }
 
 
@@ -79,7 +84,7 @@ pub fn compile(source: &str, chunk: &mut Chunk) -> bool {
     advance(&mut parser, &mut scanner);
     expression();
     consume(&mut parser, TokenType::TokenEof, "Expect end of expression.", &mut scanner);
-    end_compiler(chunk, parser.previous.line);
+    end_compiler(chunk, &parser);
     return !parser.had_error;
 }
 
@@ -87,22 +92,36 @@ pub fn expression() {
     
 }
 
-pub fn end_compiler(chunk: &mut Chunk, line: i32) {
-    chunk.emit_return(line);
+pub fn end_compiler(chunk: &mut Chunk, parser: &Parser) {
+    chunk.emit_return(parser);
 }
 
 impl Chunk {
-    pub fn emit_byte(&mut self, byte: u8, line: i32) {
-        self.write_chunk(byte, line);
+    pub fn emit_byte(&mut self, byte: u8, parser: &Parser) {
+        self.write_chunk(byte, parser.previous.line);
     }
     
-    pub fn emit_bytes(&mut self, byte1: u8, line1: i32, byte2: u8, line2: i32) {
-        self.write_chunk(byte1, line1);
-        self.write_chunk(byte2, line2);
+    pub fn emit_bytes(&mut self, byte1: u8, byte2: u8, parser: &Parser) {
+        self.emit_byte(byte1, parser);
+        self.emit_byte(byte2, parser);
     }
     
-    pub fn emit_return(&mut self, line: i32) {
-        self.emit_byte(OpCode::OpReturn as u8, line);
+    pub fn emit_constant(&mut self, value: f64, parser: &mut Parser) {
+        let constant = self.make_constant(value, parser);
+        self.emit_bytes(OpCode::OpConstant as u8, constant, parser);
+    }
+    
+    pub fn emit_return(&mut self, parser: &Parser) {
+        self.emit_byte(OpCode::OpReturn as u8, parser);
+    }
+    
+    pub fn make_constant(&mut self, value: f64, parser: &mut Parser) -> u8 {
+        let constant = self.add_constant(value);
+        if constant > u8::MAX as usize {
+            parser.error("Too many constants in one chunk.");
+            return 0;
+        }
+        return constant as u8;
     }
 }
 
