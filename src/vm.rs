@@ -129,7 +129,7 @@ impl VM {
 pub fn interpret(source: &str) -> InterpreResult {
     let mut vm = VM::new(Chunk::new());
     
-    if compile(source, &vm.chunk) == false {
+    if compile(source, &mut vm.chunk) == false {
         return InterpreResult::InterpretCompileError;
     }
     return vm.run();

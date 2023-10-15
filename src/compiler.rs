@@ -1,4 +1,4 @@
-use crate::{scanner::{Scanner, TokenType, Token}, chunk::Chunk};
+use crate::{scanner::{Scanner, TokenType, Token}, chunk::{Chunk, OpCode}, vm::VM};
 
 pub struct Parser<'a> {
     pub current: Token<'a>,
@@ -73,11 +73,37 @@ pub fn consume<'a, 'b>(parser: &'a mut Parser<'b>, type_: TokenType, message: &s
     parser.error_at_current(message);
 }
 
-pub fn compile(source: &str, chunk: &Chunk) -> bool {
+pub fn compile(source: &str, chunk: &mut Chunk) -> bool {
     let mut scanner = Scanner::new(source);
     let mut parser = Parser::new();
     advance(&mut parser, &mut scanner);
-    // expression();
+    expression();
     consume(&mut parser, TokenType::TokenEof, "Expect end of expression.", &mut scanner);
+    end_compiler(chunk, parser.previous.line);
     return !parser.had_error;
 }
+
+pub fn expression() {
+    
+}
+
+pub fn end_compiler(chunk: &mut Chunk, line: i32) {
+    chunk.emit_return(line);
+}
+
+impl Chunk {
+    pub fn emit_byte(&mut self, byte: u8, line: i32) {
+        self.write_chunk(byte, line);
+    }
+    
+    pub fn emit_bytes(&mut self, byte1: u8, line1: i32, byte2: u8, line2: i32) {
+        self.write_chunk(byte1, line1);
+        self.write_chunk(byte2, line2);
+    }
+    
+    pub fn emit_return(&mut self, line: i32) {
+        self.emit_byte(OpCode::OpReturn as u8, line);
+    }
+}
+
+
