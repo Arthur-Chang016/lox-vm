@@ -88,6 +88,23 @@ pub fn compile(source: &str, chunk: &mut Chunk) -> bool {
     return !parser.had_error;
 }
 
+pub fn grouping<'a, 'b>(parser: &'a mut Parser<'b>, scanner: &'a mut Scanner<'b>) {
+    expression();
+    consume(parser, TokenType::TokenRightParen, "Expect ')' after expression.", scanner);
+}
+
+pub fn unary<'a, 'b>(parser: &'a mut Parser<'b>, scanner: &'a mut Scanner<'b>, chunk: &mut Chunk) {
+    let operator_type = parser.previous.type_;
+    // Compile this operand
+    expression();
+    
+    // Emit the operator instruction
+    match operator_type {
+        x if x == TokenType::TokenMinus => chunk.emit_byte(OpCode::OpNegate as u8, parser),
+        _ => { return }  // Unreachable
+    }
+}
+
 pub fn expression() {
     
 }
